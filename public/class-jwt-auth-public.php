@@ -71,11 +71,11 @@ class Jwt_Auth_Public
      * Add the endpoints to the API
      */
     public function add_api_routes()
-    {
-        register_rest_route($this->namespace, 'token', array(
+    {	$_REQUEST['_wpnonce'] = wp_create_nonce('wp_rest');		
+        register_rest_route($this->namespace, 'token', [
             'methods' => 'POST',
             'callback' => array($this, 'generate_token'),
-        ));
+        ]);
 
         register_rest_route($this->namespace, 'token/validate', array(
             'methods' => 'POST',
@@ -120,7 +120,7 @@ class Jwt_Auth_Public
         }
         /** Try to authenticate the user with the passed credentials*/
         $user = wp_authenticate($username, $password);
-
+		$user = apply_filters('jwt_auth_sso', $user, $request);
         /** If the authentication fails return a error*/
         if (is_wp_error($user)) {
             $error_code = $user->get_error_code();
@@ -222,12 +222,16 @@ class Jwt_Auth_Public
      */
     public function validate_token($output = true)
     {
-        /*
-         * Looking for the HTTP_AUTHORIZATION header, if not present just
+		/*
+         * Looking for the HTTP_JWT_AUTHORIZATION header, if not present just
          * return the user.
          */
-        $auth = isset($_SERVER['HTTP_AUTHORIZATION']) ?  $_SERVER['HTTP_AUTHORIZATION'] : false;
-
+		$auth = isset($_SERVER['HTTP_JWT_AUTHORIZATION']) ?  $_SERVER['HTTP_JWT_AUTHORIZATION'] : false;
+        
+		/* keep the tradicional way to looking for auth */
+		if (!$auth) {
+			$auth = isset($_SERVER['HTTP_AUTHORIZATION']) ?  $_SERVER['HTTP_AUTHORIZATION'] : false;
+		} 
 
         /* Double check for different auth header string (server dependent) */
         if (!$auth) {
