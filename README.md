@@ -35,7 +35,7 @@ RewriteRule ^(.*) - [E=HTTP_AUTHORIZATION:%1]
 To enable this option you'll need to edit your **.htaccess** file by adding the following (see https://github.com/Tmeister/wp-api-jwt-auth/issues/1):
 
 ```
-SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+SetEnvIf Authorization "(.*)" HTTP_JWT_AUTHORIZATION=$1
 ```
 
 ## Installation & Configuration
